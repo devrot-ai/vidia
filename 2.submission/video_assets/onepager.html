@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  @page { size: Letter; margin: 0; }
+  body {
+    font-family: 'SF Mono', Menlo, Consolas, 'JetBrains Mono', monospace;
+    background: #0a0d12;
+    color: #d7dce3;
+    width: 816px;
+  }
+  .page {
+    width: 816px;
+    height: 1056px;
+    padding: 38px 60px;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  .eyebrow {
+    font-size: 10.5px; letter-spacing: 0.14em; color: #5b6472;
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+  .header { display: flex; align-items: center; gap: 16px; margin-bottom: 6px; }
+  .diamond {
+    width: 26px; height: 26px; background: #e0a458;
+    transform: rotate(45deg); border-radius: 4px; flex-shrink: 0;
+  }
+  h1 { font-size: 36px; color: #f4f1ea; letter-spacing: 0.03em; font-weight: 800; }
+  .tagline {
+    font-size: 14px; color: #9aa4b2; margin: 10px 0 18px; line-height: 1.5;
+    max-width: 640px;
+  }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .badge {
+    font-size: 10px; letter-spacing: 0.06em; font-weight: 600;
+    padding: 4px 9px; border-radius: 3px; border: 1px solid; text-transform: uppercase;
+  }
+  .badge.a { color: #7fd99a; border-color: rgba(127,217,154,0.4); background: rgba(127,217,154,0.08); }
+  .badge.b { color: #9ad24a; border-color: rgba(154,210,74,0.4); background: rgba(154,210,74,0.08); }
+  .badge.c { color: #6ea8fe; border-color: rgba(110,168,254,0.4); background: rgba(110,168,254,0.08); }
+  .badge.d { color: #e0a458; border-color: rgba(224,164,88,0.4); background: rgba(224,164,88,0.08); }
+
+  h2 {
+    font-size: 11.5px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #e0a458; margin: 16px 0 9px; padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.09);
+  }
+  p { font-size: 12px; line-height: 1.5; color: #aab2bd; margin-bottom: 6px; }
+  code, .mono { font-family: inherit; color: #d7dce3; }
+
+  .loop {
+    display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+    margin: 8px 0 12px;
+  }
+  .step {
+    font-size: 10.5px; padding: 6px 10px; border-radius: 4px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+    color: #d7dce3; white-space: nowrap;
+  }
+  .arrow { color: #5b6472; font-size: 12px; }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin: 10px 0 2px;
+  }
+  .stat {
+    background: rgba(127,217,154,0.06); border: 1px solid rgba(127,217,154,0.25);
+    border-radius: 6px; padding: 11px 12px;
+  }
+  .stat .num { font-size: 19px; font-weight: 800; color: #7fd99a; }
+  .stat .lbl { font-size: 10px; color: #8b93a0; margin-top: 3px; line-height: 1.35; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 2px; }
+  th {
+    text-align: left; font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: #5b6472; padding: 5px 10px 5px 0; border-bottom: 1px solid rgba(255,255,255,0.09);
+  }
+  td {
+    padding: 6px 10px 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: #b7bec9; vertical-align: top;
+  }
+  td.k { color: #e0a458; white-space: nowrap; font-weight: 600; }
+
+  .links { display: flex; gap: 24px; margin-top: 6px; flex-wrap: wrap; }
+  .link-block .k { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #5b6472; }
+  .link-block .v { font-size: 12px; color: #6ea8fe; margin-top: 2px; }
+
+  .finding { margin-bottom: 9px; }
+  .finding .t { font-size: 11.5px; color: #f4f1ea; font-weight: 700; margin-bottom: 2px; }
+  .finding .d { font-size: 11px; color: #9aa4b2; line-height: 1.45; }
+
+  .footer {
+    position: absolute; bottom: 36px; left: 60px; right: 60px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 10px; color: #454c58; letter-spacing: 0.05em;
+    border-top: 1px solid rgba(255,255,255,0.07); padding-top: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- PAGE 1 -->
+<div class="page">
+  <div class="eyebrow">Nebius × NVIDIA Global AI Hackathon — Track 1: Coding and Agentic Engineering</div>
+  <div class="header">
+    <div class="diamond"></div>
+    <h1>ARCHON</h1>
+  </div>
+  <div class="tagline">Autonomous, sandbox-verified software repair and AI-stack migration, running on Nebius Token Factory and NVIDIA Nemotron.</div>
+  <div class="badges">
+    <div class="badge a">Nebius Token Factory</div>
+    <div class="badge b">NVIDIA Nemotron 3</div>
+    <div class="badge c">Token Factory Sandboxes</div>
+    <div class="badge d">Tavily Search API</div>
+  </div>
+
+  <h2>The problem</h2>
+  <p>A dependency ships a breaking release. The test suite goes red. Someone reads the traceback, finds the changelog, patches it, re-runs the tests. Chat assistants don't close this loop — they suggest a plausible patch that nobody has executed, against training data that predates the break. Letting an agent actually run code to find out is a real safety problem on a laptop or shared CI runner.</p>
+
+  <h2>What ARCHON does</h2>
+  <p>ARCHON reproduces the failure inside a Nebius Token Factory Sandbox, grounds itself against the live web with Tavily, asks NVIDIA Nemotron 3 to diagnose and patch it, and verifies the fix by re-running the tests — before a human ever sees it.</p>
+  <div class="loop">
+    <div class="step">Reproduce in sandbox</div><div class="arrow">&rarr;</div>
+    <div class="step">Ground with Tavily</div><div class="arrow">&rarr;</div>
+    <div class="step">Diagnose &amp; patch (Ultra)</div><div class="arrow">&rarr;</div>
+    <div class="step">Fork per candidate, test</div><div class="arrow">&rarr;</div>
+    <div class="step">Review (Super) &amp; present</div>
+  </div>
+  <p>Each candidate patch runs on its own sandbox fork. Losing attempts are simply never referenced again — there is no rollback, because nothing shared was ever mutated. A second mission type reuses the same loop for AI-stack migration: rewriting OpenAI/Anthropic client code to Nebius Token Factory with Nemotron models, verified by the repo's own tests plus a parity harness.</p>
+
+  <h2>Verified results</h2>
+  <div class="stats">
+    <div class="stat"><div class="num">6 / 6</div><div class="lbl">SWE-bench Verified psf/requests instances resolved in real Token Factory Sandboxes, $0.67 total inference</div></div>
+    <div class="stat"><div class="num">49s · $0.032</div><div class="lbl">psf__requests-1142: one iteration, reproduce to verified patch</div></div>
+    <div class="stat"><div class="num">1 iter · $0.016</div><div class="lbl">openai_chat_service migration VERIFIED — client genuinely rewritten, not just green mocks</div></div>
+  </div>
+
+  <h2>How Nebius and NVIDIA are used</h2>
+  <table>
+    <tr><th>Component</th><th>Used for</th></tr>
+    <tr><td class="k">Nemotron 3 Ultra</td><td>Root-cause analysis and patch generation (550B-A55B)</td></tr>
+    <tr><td class="k">Nemotron 3 Super</td><td>Mission supervisor, patch review, Tavily query synthesis (120B-A12B)</td></tr>
+    <tr><td class="k">Nemotron 3 Nano</td><td>Compacting test logs, parsing pass/fail counts (30B-A3B)</td></tr>
+    <tr><td class="k">Token Factory Sandboxes</td><td>Clone, install, run tests, fork one sandbox per candidate patch</td></tr>
+    <tr><td class="k">Tavily Search API</td><td>Live docs/changelog/issue grounding inside the reasoning loop, before the first patch attempt</td></tr>
+  </table>
+
+  <div class="footer">
+    <span>ARCHON — Apache 2.0</span>
+    <span>Page 1 / 2</span>
+  </div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page">
+  <div class="eyebrow">Supplementary material for judges</div>
+  <h2 style="margin-top:0">Architecture</h2>
+  <p>Next.js 16 cockpit (mission form, SSE reasoning stream, xterm.js sandbox terminal — one tab per fork, Monaco diff viewer) talks to a FastAPI orchestrator running a deterministic mission state machine. The state machine routes model calls by tier, drives the Token Factory Sandbox client, calls Tavily, and streams every event back to the cockpit live. The public demo (archon-cockpit.vercel.app) is a separate stateless replay server on Vercel implementing the same REST+SSE contract, streaming nine recorded golden-dataset missions with zero credentials and zero spend; live missions run on the self-hosted orchestrator.</p>
+
+  <h2>Engineering decisions that mattered</h2>
+  <div class="finding">
+    <div class="t">Search-and-replace edits, not unified diffs</div>
+    <div class="d">Nemotron 3 Ultra's hand-written unified diffs never applied cleanly (0 of 5 live runs). Switching candidates to exact search-and-replace edits, applied by the executor with git diff producing the visible diff, fixed this completely — edits applied first try on every subsequent run.</div>
+  </div>
+  <div class="finding">
+    <div class="t">Structural migration-completeness gate</div>
+    <div class="d">Our first two live migration missions both came back "VERIFIED" with patches that never touched the client — one was a 2-line test-name change, the other a dependency swap in pyproject.toml. Mocked tests stayed green because the client was never rewritten. We added a post-patch scan that only allows VERIFIED when zero closed-provider client constructions or model literals remain in source.</div>
+  </div>
+  <div class="finding">
+    <div class="t">Strict SWE-bench judging</div>
+    <div class="d">Resolution is judged only on the instance's FAIL_TO_PASS/PASS_TO_PASS test ids, never on process exit code — the dataset contains truncated ids and test files with unrelated network-dependent tests that would otherwise produce false negatives.</div>
+  </div>
+  <div class="finding">
+    <div class="t">Deterministic supervisor</div>
+    <div class="d">Mission control flow is plain code, not a model call — Nemotron Super narrates optionally but never decides what happens next. This makes every mission's control flow auditable and reproducible.</div>
+  </div>
+
+  <h2>Known limitations (documented honestly)</h2>
+  <div class="finding">
+    <div class="t">Monorepo subdirectory paraphrasing</div>
+    <div class="d">A subproject buried inside a monorepo resolved 0 of 3 times in Sandboxes, while the identical project as a standalone repo resolved first try. In the longer, multi-file prompt shape, Ultra paraphrased source instead of copying it verbatim — referencing fields and classes that don't exist.</div>
+  </div>
+  <div class="finding">
+    <div class="t">Honest failure: anthropic_summarizer migration</div>
+    <div class="d">Failed after 8 iterations. The full Messages-API-to-chat-completions translation, plus its Anthropic-shaped test doubles, did not land inside budget — the completeness gate correctly refused every shallow pass rather than reporting a false VERIFIED.</div>
+  </div>
+
+  <h2>Links</h2>
+  <div class="links">
+    <div class="link-block"><div class="k">Live demo</div><div class="v">archon-cockpit.vercel.app</div></div>
+    <div class="link-block"><div class="k">Source (Apache 2.0)</div><div class="v">github.com/CodeWithEugene/Archon</div></div>
+  </div>
+
+  <div class="footer">
+    <span>ARCHON — Apache 2.0</span>
+    <span>Page 2 / 2</span>
+  </div>
+</div>
+
+</body>
+</html>

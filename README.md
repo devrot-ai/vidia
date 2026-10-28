@@ -1,0 +1,181 @@
+<div align="center">
+
+# ARCHON
+
+**Autonomous, sandbox-verified software repair and AI-stack migration, running on Nebius Token Factory and NVIDIA Nemotron.**
+
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE.md)
+[![Inference: Nebius Token Factory](https://img.shields.io/badge/Inference-Nebius_Token_Factory-00D26A)](https://tokenfactory.nebius.com/)
+[![Models: NVIDIA Nemotron 3](https://img.shields.io/badge/Models-NVIDIA_Nemotron_3-76B900)](https://nebius.com/services/token-factory/nemotron)
+[![Sandboxes: Token Factory](https://img.shields.io/badge/Execution-Token_Factory_Sandboxes-1F6FEB)](https://docs.tokenfactory.nebius.com/sandboxes/overview)
+[![Grounding: Tavily](https://img.shields.io/badge/Grounding-Tavily_Search_API-FF6B6B)](https://tavily.com/)
+[![Devpost](https://img.shields.io/badge/Devpost-Nebius_x_NVIDIA_Global_AI_Hackathon-003E54)](https://nebiusglobalaihackathon.devpost.com/)
+
+Submission to the **[Nebius x NVIDIA Global AI Hackathon](https://nebiusglobalaihackathon.devpost.com/)**, Track 1: Coding and Agentic Engineering.
+
+</div>
+
+---
+
+## Status
+
+> **Alpha, live on all four pillars.** On September 12, 2026 ARCHON resolved **SWE-bench Verified `psf__requests-1142` inside a Nebius Token Factory Sandbox**: the preloaded environment booted, the instance's test patch was applied, the baseline reproduced 1 failing and 5 passing tests, Nemotron 3 Super synthesized Tavily queries and a research brief, Nemotron 3 Ultra read the source and produced the fix as search-and-replace edits, the fix ran on a sandbox fork, 6 of 6 tests passed with 0 regressions, and the Super reviewer approved. One iteration, 49 seconds, $0.032 of inference. Every step is a span in LangSmith.
+>
+> Golden set so far: **6 of 6** SWE-bench Verified `psf/requests` instances resolved in Sandboxes, $0.67 of inference in total (see [TESTING.md](0.docs/build/TESTING.md)). Migration missions now run live on Nemotron: `openai_chat_service` **VERIFIED in 1 iteration for $0.016** (the patch genuinely rewrites the client to `NEBIUS_BASE_URL` with Nemotron models — a structural post-patch scan now rejects migrations that leave closed-provider code behind, ADR-015); `anthropic_summarizer` **failed honestly after 8 iterations** — the full Messages-API-to-chat-completions translation plus its Anthropic-shaped test doubles did not land in budget, and the gate refused every shallow pass. Known limitation: a subproject buried deep inside a monorepo (`subdir`) resolved 0 of 3 times in Sandboxes while the same project as a standalone repository resolved first try; Ultra tends to paraphrase source files in that prompt shape. Network-bound test suites need the per-test timeout the SWE-bench commands now carry.
+>
+> **Hosted demo:** [archon-cockpit.vercel.app](https://archon-cockpit.vercel.app) — the cockpit streaming all nine recorded missions (replay mode, no credentials needed), including the resolved migration and the honest unresolved one. Live missions run on the self-hosted FastAPI orchestrator with Nebius credentials; the hosted demo serves the recordings through a stateless replay server with the same API contract.
+>
+> Not yet done: the video.
+>
+> Progress log: [0.docs/build/SESSIONS.md](0.docs/build/SESSIONS.md). Plan: [0.docs/build/PLAN.md](0.docs/build/PLAN.md). Video script: [2.submission/VIDEO.md](2.submission/VIDEO.md).
+
+---
+
+## What ARCHON does
+
+ARCHON takes a repository with a failing test suite, reproduces the failure inside a **Nebius Token Factory Sandbox**, researches the error with the **Tavily Search API**, asks **NVIDIA Nemotron 3 Ultra** to diagnose and patch it, and re-runs the tests inside the sandbox until they pass. Every candidate patch is tried on its own sandbox fork, so failed attempts are discarded rather than rolled back. The user gets a verified diff, the full terminal transcript, and the agent's reasoning trace.
+
+Two mission types share that loop:
+
+1. **Bug healing** (primary). Input: a repo plus a failing test command, or a SWE-bench Verified instance from the Sandboxes catalog. Output: a patch that makes the failing tests pass without breaking the passing ones.
+2. **AI-stack migration** (secondary). Input: a repo that calls the OpenAI or Anthropic SDK. Output: a patch that points the client at Nebius Token Factory and maps model names to Nemotron equivalents, verified by the repo's own tests plus a small parity harness, with a cost estimate computed from a maintained price table.
+
+Everything the agent does is streamed live to a web cockpit: reasoning, Tavily queries, sandbox terminal output, and a side-by-side diff.
+
+## Architecture
+
+```mermaid
+flowchart TD
+    subgraph Client ["Cockpit (1.platform/client, Next.js 16)"]
+        UI["Mission form"]
+        Stream["Reasoning stream (SSE)"]
+        Term["Sandbox terminal (xterm.js)"]
+        Diff["Diff viewer (Monaco)"]
+    end
+
+    subgraph Server ["Orchestrator (1.platform/server, FastAPI)"]
+        SM["Mission state machine"]
+        Router["Model router"]
+        SBX["Sandbox client (contree-sdk)"]
+    end
+
+    subgraph Nebius ["Nebius Token Factory"]
+        Ultra["Nemotron 3 Ultra 550B-A55B<br/>diagnosis and patch synthesis"]
+        Super["Nemotron 3 Super 120B-A12B<br/>orchestration, review, research"]
+        Nano["Nemotron 3 Nano 30B-A3B<br/>log compaction, test parsing"]
+        Sandboxes["Token Factory Sandboxes<br/>microVM, fork per attempt"]
+    end
+
+    Tavily["Tavily Search API"]
+
+    UI --> SM
+    SM --> Stream
+    SM --> Router
+    Router --> Ultra
+    Router --> Super
+    Router --> Nano
+    SM --> SBX --> Sandboxes
+    Sandboxes --> Term
+    SM --> Tavily
+    SM --> Diff
+```
+
+## How Nebius and NVIDIA are used
+
+| Component | What ARCHON uses it for |
+| :--- | :--- |
+| **Nebius Token Factory inference** (`https://api.tokenfactory.nebius.com/v1/`) | Every model call, through the OpenAI-compatible API. |
+| **Nemotron 3 Ultra** (`nvidia/Nemotron-3-Ultra-550b-a55b`) | Root-cause analysis and patch generation. |
+| **Nemotron 3 Super** (`nvidia/nemotron-3-super-120b-a12b`) | Mission supervisor, patch review, Tavily query synthesis. |
+| **Nemotron 3 Nano** (`nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`) | Compacting test logs and parsing pass/fail counts. |
+| **Token Factory Sandboxes** (`contree-sdk`) | Clone, install, run tests, and fork one sandbox per candidate patch. Currently in beta. |
+| **Tavily Search API** | Fetches current documentation and upstream issue threads for the failing library before the model reasons about a fix. |
+| **LangSmith** (optional) | One trace per mission: roles, sandbox runs, Tavily queries, and every Nemotron call with token usage. |
+
+## Repository layout
+
+```
+.
+├── 0.docs/
+│   ├── info.md                 # Hackathon rules, prizes, dates, platform notes
+│   ├── problem+solution.md     # Problem framing and solution overview
+│   ├── prior-art.md            # Competitive landscape
+│   └── build/
+│       ├── PRD.md              # Requirements
+│       ├── DESIGN.md           # Technical design
+│       ├── AGENTS.md           # Agent roles, prompts, protocols
+│       ├── PLAN.md             # Schedule, budget, risks
+│       ├── TESTING.md          # Test strategy and golden dataset
+│       └── SESSIONS.md         # Session log and ADRs
+├── 1.platform/
+│   ├── client/                 # Next.js 16 cockpit
+│   └── server/                 # FastAPI orchestrator
+├── 2.submission/
+│   ├── README.md               # Devpost submission text (draft)
+│   └── FEEDBACK.md             # Running log of Nebius / NVIDIA developer feedback
+├── CONTRIBUTING.md
+├── LICENSE.md                  # Apache 2.0
+├── README.md
+└── SECURITY.md
+```
+
+## Quickstart
+
+### Prerequisites
+
+- Python 3.12+
+- Node.js 20+
+- A Nebius Token Factory API key with Sandboxes beta access
+- A Tavily API key
+
+### Server
+
+```bash
+cd 1.platform/server
+cp .env.example .env        # then fill in NEBIUS_API_KEY and TAVILY_API_KEY
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8010
+```
+
+### Client
+
+```bash
+cd 1.platform/client
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+### Environment variables
+
+```bash
+NEBIUS_API_KEY=            # Token Factory inference and Sandboxes
+NEBIUS_BASE_URL=https://api.tokenfactory.nebius.com/v1/
+NEBIUS_SANDBOX_URL=https://api.tokenfactory.nebius.com/sandboxes
+TAVILY_API_KEY=
+LANGSMITH_API_KEY=         # Optional. Enables LangSmith tracing of every mission
+LANGSMITH_PROJECT=archon
+ARCHON_DEMO_TOKEN=         # Required for live mode on the public demo
+ARCHON_MAX_MISSION_USD=3   # Hard per-mission spend cap
+```
+
+## Submission checklist
+
+Boxes are ticked only when the item exists and has been verified.
+
+- [x] Runs on Nebius Token Factory: live inference calls to `api.tokenfactory.nebius.com` (verified September 12)
+- [x] Uses NVIDIA open models: Nemotron 3 Ultra, Super, and Nano (verified September 12)
+- [x] Executes code in Token Factory Sandboxes (gate test passed September 12)
+- [x] Tavily Search API called at runtime inside the reasoning loop (verified September 12)
+- [x] Track chosen: Track 1, Coding and Agentic Engineering (ADR-001)
+- [x] Open-source license: Apache 2.0 in `LICENSE.md`
+- [x] Public demo URL: [archon-cockpit.vercel.app](https://archon-cockpit.vercel.app) — replay mode, no credentials, live through the judging window (recorded missions only; live missions are self-hosted)
+- [ ] YouTube demo video under three minutes ([script and production guide](2.submission/VIDEO.md))
+- [x] Product feedback section written ([2.submission/FEEDBACK.md](2.submission/FEEDBACK.md))
+- [ ] Devpost entry submitted before Oct 30, 2026, 10:00 AM PDT
+
+## License
+
+Apache License 2.0. See [LICENSE.md](LICENSE.md).

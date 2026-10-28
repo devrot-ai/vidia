@@ -1,0 +1,7 @@
+file '01_hook.mp3'
+file '02_what_it_is.mp3'
+file '03_loop_live.mp3'
+file '04_fork_per_candidate.mp3'
+file '05_numbers.mp3'
+file '06_migration.mp3'
+file '07_close.mp3'

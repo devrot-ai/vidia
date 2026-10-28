@@ -1,0 +1,172 @@
+// Generates the demo dataset for the Vercel-hosted replay server.
+//
+// Reads real recorded missions from ../server/tests/golden/recordings/ and projects
+// them into src/demo-data/ as static JSON the Next.js route handlers can import.
+// Run after every golden run: `npm run gen:demo`.
+//
+// Why static data: Vercel serverless functions are stateless and cannot share the
+// FastAPI process's event bus, so the demo streams recordings straight from the
+// bundle. Live missions still run on the self-hosted FastAPI orchestrator.
+
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const CLIENT = join(HERE, "..");
+const SERVER_RECORDINGS = join(CLIENT, "..", "server", "tests", "golden", "recordings");
+const SERVER_SWE = join(CLIENT, "..", "server", "tests", "golden");
+const OUT = join(CLIENT, "src", "demo-data");
+
+// Scripted-model smoke runs are not real missions; do not show them in the demo.
+const SKIP = new Set(["smoke-broken_pydantic_v2-local"]);
+
+function project(recordingId, raw) {
+  const m = raw.mission ?? {};
+  return {
+    recordingId,
+    mission: {
+      id: m.id,
+      type: m.type,
+      repo_url: m.repo_url ?? null,
+      git_ref: m.git_ref ?? null,
+      test_command: m.test_command ?? null,
+      swe_instance_id: m.swe_instance_id ?? null,
+      status: m.status,
+      iteration: m.iteration ?? 0,
+      spend_usd: m.spend_usd ?? 0,
+      created_at: m.created_at,
+      summary: typeof m.summary === "object" && m.summary !== null ? m.summary : {},
+      diff: Array.isArray(m.diff) ? m.diff : [],
+    },
+    attempts: (raw.attempts ?? []).map((a) => ({
+      id: a.id,
+      iteration: a.iteration,
+      exit_code: a.exit_code,
+      fail_to_pass: a.fail_to_pass ?? 0,
+      pass_to_pass_broken: a.pass_to_pass_broken ?? 0,
+      patch_lines: a.patch_lines ?? 0,
+      selected: Boolean(a.selected),
+      patch: a.patch ?? "",
+    })),
+    usage: (raw.usage ?? []).map((u) => ({
+      model: u.model,
+      prompt_tokens: u.prompt_tokens ?? 0,
+      completion_tokens: u.completion_tokens ?? 0,
+      cost_usd: u.cost_usd ?? 0,
+    })),
+    events: (raw.events ?? []).map((e) => ({ id: e.id, kind: e.kind, payload: e.payload, ts: e.ts })),
+  };
+}
+
+function title(rec) {
+  if (rec.mission.swe_instance_id) return rec.mission.swe_instance_id;
+  const url = rec.mission.repo_url ?? "";
+  if (url.startsWith("file://")) return url.replace(/\/+$/, "").split("/").pop() ?? url;
+  return url.replace("https://github.com/", "");
+}
+
+function durationS(rec) {
+  const t0 = Date.parse(rec.events[0]?.ts ?? "");
+  const t1 = Date.parse(rec.events[rec.events.length - 1]?.ts ?? "");
+  return Number.isFinite(t0) && Number.isFinite(t1) ? Math.round((t1 - t0) / 100) / 10 : 0;
+}
+
+rmSync(join(OUT, "recordings"), { recursive: true, force: true });
+mkdirSync(join(OUT, "recordings"), { recursive: true });
+
+const ids = [];
+for (const file of readdirSync(SERVER_RECORDINGS).sort()) {
+  if (!file.endsWith(".json") || SKIP.has(file.replace(/\.json$/, ""))) continue;
+  const id = file.replace(/\.json$/, "");
+  const raw = JSON.parse(readFileSync(join(SERVER_RECORDINGS, file), "utf8"));
+  const rec = project(id, raw);
+  writeFileSync(join(OUT, "recordings", `${id}.json`), JSON.stringify(rec));
+  ids.push(id);
+}
+
+// SWE-bench catalog for the mission-form dropdown (id, repo, short problem, difficulty).
+const instances = [];
+try {
+  const listed = JSON.parse(readFileSync(join(SERVER_SWE, "instances.json"), "utf8"));
+  for (const id of listed.swe_bench_verified ?? []) {
+    try {
+      const inst = JSON.parse(readFileSync(join(SERVER_SWE, "swe", `${id}.json`), "utf8"));
+      instances.push({
+        id: inst.id,
+        repo: inst.repo,
+        short_problem: (inst.short_problem ?? "").slice(0, 120),
+        difficulty: inst.difficulty ?? "",
+      });
+    } catch {
+      // instance file missing; skip
+    }
+  }
+} catch {
+  // no catalog; the dropdown will be empty
+}
+
+const imports = ids
+  .map((id) => `import r${ids.indexOf(id)} from "./recordings/${id}.json";`)
+  .join("\n");
+const entries = ids
+  .map((id) => `  ${JSON.stringify(id)}: r${ids.indexOf(id)} as DemoRecording,`)
+  .join("\n");
+const metas = ids
+  .map((id) => {
+    const raw = JSON.parse(readFileSync(join(OUT, "recordings", `${id}.json`), "utf8"));
+    return `  ${JSON.stringify(id)}: ${JSON.stringify({
+      id,
+      title: title(raw),
+      type: raw.mission.type,
+      repo_url: raw.mission.repo_url,
+      swe_instance_id: raw.mission.swe_instance_id,
+      status: raw.mission.status,
+      iterations: raw.mission.iteration,
+      resolved: raw.mission.status === "VERIFIED",
+      duration_s: durationS(raw),
+    })},`;
+  })
+  .join("\n");
+
+writeFileSync(
+  join(OUT, "recordings.ts"),
+  `// GENERATED by scripts/gen-demo-data.mjs — run \`npm run gen:demo\` to refresh. Do not edit.
+import type { DemoRecording, ReplayMeta } from "./types";
+
+${imports}
+
+const RECORDINGS: Record<string, DemoRecording> = {
+${entries}
+};
+
+export const RECORDING_METAS: Record<string, ReplayMeta> = {
+${metas}
+};
+
+export function getRecording(id: string): DemoRecording | null {
+  return RECORDINGS[id] ?? null;
+}
+
+export function listRecordingMetas(): ReplayMeta[] {
+  return Object.values(RECORDING_METAS);
+}
+`
+);
+
+writeFileSync(
+  join(OUT, "instances.ts"),
+  `// GENERATED by scripts/gen-demo-data.mjs — run \`npm run gen:demo\` to refresh. Do not edit.
+export const SWE_INSTANCES = ${JSON.stringify(instances, null, 2)} as Array<{
+  id: string;
+  repo: string;
+  short_problem: string;
+  difficulty: string;
+}>;
+`
+);
+console.log(`demo data: ${ids.length} recordings, ${instances.length} SWE-bench instances -> ${OUT}`);
+if (!existsSync(join(OUT, "recordings")) || ids.length === 0) {
+  console.error("no recordings generated — check the server recordings directory");
+  process.exit(1);
+}

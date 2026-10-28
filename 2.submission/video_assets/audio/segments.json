@@ -1,0 +1,37 @@
+[
+  {
+    "id": "01_hook",
+    "target": "0:00-0:14",
+    "text": "Your test suite just went red. A dependency broke overnight. Someone has to read the traceback, find the changelog, patch it, and re-run the tests. What if an agent did all of that, and proved it worked?"
+  },
+  {
+    "id": "02_what_it_is",
+    "target": "0:14-0:32",
+    "text": "This is ARCHON. It takes a broken repository, reproduces the failure inside a Nebius Token Factory Sandbox, researches the error on the live web with Tavily, and asks NVIDIA's Nemotron models to diagnose and patch it. Every step streams to this cockpit in real time."
+  },
+  {
+    "id": "03_loop_live",
+    "target": "0:32-1:12",
+    "text": "Watch a real mission. This is a verified swee-bench instance. ARCHON boots the preloaded sandbox and applies the instance's test patch. The baseline reproduces one failing test. Nemotron 3 Super synthesizes Tavily search queries from the error signature, you can see the queries and result counts here. Then Nemotron 3 Ultra reads the source and produces a root cause plus two candidate fixes."
+  },
+  {
+    "id": "04_fork_per_candidate",
+    "target": "1:12-1:45",
+    "text": "Each candidate runs on its own fork of the sandbox, two parallel sandboxes, isolated from each other. No rollback, the losing fork is simply dropped. This one keeps every previously passing test green and fixes the failure. Nemotron 3 Super reviews the winning patch, no deleted tests, no unrelated changes, no secrets, and approves. The verified diff lands here, with a downloadable patch and a git-apply command."
+  },
+  {
+    "id": "05_numbers",
+    "target": "1:45-2:10",
+    "text": "One iteration, forty-nine seconds, three cents of inference. Every model call, sandbox run, and search is a span in LangSmith. On the golden dataset, ARCHON resolved six of six swee-bench Verified instances inside real Token Factory Sandboxes, for sixty-seven cents total, and it reports the failures honestly on the repository."
+  },
+  {
+    "id": "06_migration",
+    "target": "2:10-2:32",
+    "text": "The same loop migrates codebases off closed providers. ARCHON scans for OpenAI and Anthropic client calls, rewrites them to point at Nebius Token Factory with Nemotron models, verifies with the repository's own tests plus a parity sample, and prices the move from a dated price table. Open models on open infrastructure, for a fraction of the cost."
+  },
+  {
+    "id": "07_close",
+    "target": "2:32-2:45",
+    "text": "ARCHON is open source, Apache 2 point 0. Clone it, run it, watch it fix your broken repository. The link is below."
+  }
+]

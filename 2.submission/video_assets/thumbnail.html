@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: local('JetBrains Mono'), local('Menlo'), local('Consolas');
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1200px; height: 800px;
+    background: #0a0d12;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+    overflow: hidden;
+    position: relative;
+  }
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse 900px 600px at 50% 40%, black 40%, transparent 85%);
+  }
+  .glow {
+    position: absolute;
+    top: -200px; left: 50%; transform: translateX(-50%);
+    width: 900px; height: 600px;
+    background: radial-gradient(ellipse at center, rgba(224,164,88,0.16) 0%, transparent 70%);
+  }
+  .content {
+    position: relative; z-index: 2;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 0 100px;
+  }
+  .badge-row {
+    display: flex; gap: 10px; margin-bottom: 42px;
+  }
+  .badge {
+    font-size: 13px; letter-spacing: 0.08em; font-weight: 600;
+    padding: 7px 14px; border-radius: 3px;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+  .badge.nebius { color: #7fd99a; border-color: rgba(127,217,154,0.4); background: rgba(127,217,154,0.08); }
+  .badge.nvidia { color: #9ad24a; border-color: rgba(154,210,74,0.4); background: rgba(154,210,74,0.08); }
+  .badge.sandbox { color: #6ea8fe; border-color: rgba(110,168,254,0.4); background: rgba(110,168,254,0.08); }
+
+  .logo-row {
+    display: flex; align-items: center; gap: 22px;
+    margin-bottom: 30px;
+  }
+  .diamond {
+    width: 58px; height: 58px;
+    background: #e0a458;
+    transform: rotate(45deg);
+    border-radius: 6px;
+    box-shadow: 0 0 60px rgba(224,164,88,0.5);
+  }
+  .title {
+    font-size: 96px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: #f4f1ea;
+  }
+  .tagline {
+    max-width: 900px;
+    font-size: 26px;
+    line-height: 1.5;
+    color: #9aa4b2;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+  .footer {
+    position: absolute;
+    bottom: 40px; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: center;
+    gap: 14px;
+    font-size: 15px;
+    color: #5b6472;
+    letter-spacing: 0.06em;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #7fd99a; box-shadow: 0 0 10px rgba(127,217,154,0.8); }
+  .corner {
+    position: absolute;
+    font-size: 13px;
+    color: #3d4451;
+    letter-spacing: 0.1em;
+  }
+  .corner.tl { top: 32px; left: 40px; }
+  .corner.tr { top: 32px; right: 40px; }
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="grid"></div>
+  <div class="corner tl">// AUTONOMOUS REPAIR</div>
+  <div class="corner tr">SANDBOX-VERIFIED</div>
+  <div class="content">
+    <div class="badge-row">
+      <div class="badge nebius">Nebius Token Factory</div>
+      <div class="badge nvidia">NVIDIA Nemotron 3</div>
+      <div class="badge sandbox">Token Factory Sandboxes</div>
+    </div>
+    <div class="logo-row">
+      <div class="diamond"></div>
+      <div class="title">ARCHON</div>
+    </div>
+    <div class="tagline">Autonomous, sandbox-verified software repair and AI-stack migration, running on Nebius Token Factory and NVIDIA Nemotron.</div>
+  </div>
+  <div class="footer">
+    <div class="dot"></div>
+    <span>NEBIUS × NVIDIA GLOBAL AI HACKATHON</span>
+  </div>
+</body>
+</html>
